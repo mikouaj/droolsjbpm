@@ -39,7 +39,8 @@ public class JBPMDiagramKieServerExtension implements KieServerExtension
 	private static final Logger logger = LoggerFactory.getLogger(JBPMDiagramKieServerExtension.class);
 	private static final Boolean disabled = Boolean.parseBoolean(System.getProperty("pl.surreal.jbpmdiagram.server.ext.disabled", "false"));
 	private static final Boolean jbpmDisabled = Boolean.parseBoolean(System.getProperty(KieServerConstants.KIE_JBPM_SERVER_EXT_DISABLED, "false"));
-
+	private static final Boolean extendedSearchEnabled = Boolean.parseBoolean(System.getProperty("pl.surreal.jbpmdiagram.server.extendedsearch.enabled", "false"));
+	
 	private List<Object> services = new ArrayList<Object>();
 	private boolean initialized = false;
     private ConcurrentMap<String, DiagramReference> diagramReferences = new ConcurrentHashMap<String, DiagramReference>();
@@ -69,6 +70,7 @@ public class JBPMDiagramKieServerExtension implements KieServerExtension
 			}
 		}
 		diagramServiceBase = new DiagramServiceBase(runtimeDataService,diagramReferences);
+		diagramServiceBase.setExtendedSearchEnabled(extendedSearchEnabled);
 		services.add(diagramServiceBase);
 		initialized=true;
     }

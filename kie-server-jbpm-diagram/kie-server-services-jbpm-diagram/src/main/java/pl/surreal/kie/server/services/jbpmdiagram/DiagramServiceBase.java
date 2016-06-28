@@ -29,6 +29,7 @@ public class DiagramServiceBase
 	private static final Logger logger = LoggerFactory.getLogger(DiagramServiceBase.class);
     private RuntimeDataService dataService;
     private Map<String, DiagramReference> diagramReferenceMap;
+    private boolean extendedSearchEnabled = false;
     
 	public DiagramServiceBase(RuntimeDataService dataService, Map<String, DiagramReference> diagramReferenceMap) {
 		this.dataService = dataService;
@@ -41,16 +42,31 @@ public class DiagramServiceBase
             throw new IllegalArgumentException("No process found for " + processId + " within container " + containerId);
         }
 		
-		logger.debug("Process original path {}",procDef.getOriginalPath());
-		String processPath = "";
+		logger.debug("Process id: '{}', process package: '{}', process name: '{}'",processId,procDef.getPackageName(),procDef.getName());
+		String packagePath = "";
+		String diagramFileName = "";
         if (procDef.getPackageName() != null && !procDef.getPackageName().trim().isEmpty()) {
-        	processPath = procDef.getPackageName().replaceAll("\\.", "/");
-        }	
+        	packagePath = procDef.getPackageName().replaceAll("\\.", "/");
+        }
         
-        byte[] diagramBytes = diagramReferenceMap.get(containerId).getDiagramContent(processPath, processId);
+        // Process ID usually contains preceding pkg/project name that doesnt exist in bpmn diagram file name
+        // This will trim unwanted string with assumption that there will be no dot (.) in process name / filename
+        Pattern procIdPattern = Pattern.compile("^.+\\.([^\\.]+)$");
+        Matcher procIdMatcher = procIdPattern.matcher(processId);
+        if(procIdMatcher.matches()) {
+        	diagramFileName = procIdMatcher.group(1);
+        } else {
+        	diagramFileName = processId;
+        }
+        
+        byte[] diagramBytes = diagramReferenceMap.get(containerId).getDiagramContent(packagePath, diagramFileName);
+        if(diagramBytes==null && extendedSearchEnabled) {
+        	logger.debug("Performing extended diagram search for processId '{}' within container '{}'",processId,containerId);
+        	diagramBytes = diagramReferenceMap.get(containerId).findDiagramContent(processId);
+        }
+        
         if(diagramBytes==null) {
-            logger.warn("Could not find diagram file for process '" + processId + "' within container " + containerId);
-            return null;
+        	logger.warn("Could not get diagram file for process '{}' within container '{}'",processId,containerId);
         }
         return diagramBytes;
 	}
@@ -66,5 +82,13 @@ public class DiagramServiceBase
             }
 		}
 		return diagramString;
+	}
+
+	public boolean isExtendedSearchEnabled() {
+		return extendedSearchEnabled;
+	}
+
+	public void setExtendedSearchEnabled(boolean extendedSearchEnabled) {
+		this.extendedSearchEnabled = extendedSearchEnabled;
 	}	
 }
