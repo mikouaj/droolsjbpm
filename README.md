@@ -3,4 +3,4 @@ Base repository for my work related to Redhat [Drools](http://drools.org) and [J
 #### About
 You will find here Drools and JBPM customizations, extensions, experiments that I wrote for learning purposes or as components used in other projects.
 #### Projects
-- **kie-server-jbpmn-diagram** - server and REST extensions for KIE Exceuction Server that provide possibility to fetch bpmn diagram for a given process.
+- **[kie-server-jbpmn-diagram](https://github.com/mikouaj/droolsjbpm/tree/master/kie-server-jbpm-diagram)** - server and REST extensions for KIE Exceuction Server that provide possibility to fetch bpmn diagram for a given process.
