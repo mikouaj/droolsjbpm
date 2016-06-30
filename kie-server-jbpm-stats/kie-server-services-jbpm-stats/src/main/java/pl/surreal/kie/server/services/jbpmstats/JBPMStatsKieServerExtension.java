@@ -15,6 +15,7 @@
 package pl.surreal.kie.server.services.jbpmstats;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -33,6 +34,9 @@ import org.kie.server.services.impl.KieServerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.surreal.kie.server.api.jbpmstats.ProcessStatistics;
+import pl.surreal.kie.server.api.jbpmstats.ServiceResponse;
+
 public class JBPMStatsKieServerExtension implements KieServerExtension
 {
 	public static final String EXTENSION_NAME = "jBPM-Stats";
@@ -45,9 +49,7 @@ public class JBPMStatsKieServerExtension implements KieServerExtension
 	
 	private String persistenceUnitName = "org.jbpm.domain";
 	private StatsServiceBase statsServiceBase;
-	
-//    private ConcurrentMap<String, DiagramReference> diagramReferences = new ConcurrentHashMap<String, DiagramReference>();
-//    private DiagramServiceBase diagramServiceBase;
+
     private KieServerRegistry registry;
     
     public void init(KieServerImpl kieServer, KieServerRegistry registry) {
@@ -68,6 +70,11 @@ public class JBPMStatsKieServerExtension implements KieServerExtension
     }
     
 	public void createContainer(String id, KieContainerInstance kieContainerInstance, Map<String, Object> parameters) {
+		if(!initialized) { return; }
+		HashSet<Class<?>> extraClasses = new HashSet<>();
+		extraClasses.add(ServiceResponse.class);
+		extraClasses.add(ProcessStatistics.class);
+		kieContainerInstance.addJaxbClasses(extraClasses);
 	}
 	
 	public void destroy(KieServerImpl kieServer, KieServerRegistry registry) {

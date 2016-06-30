@@ -14,8 +14,7 @@
 
 package pl.surreal.kie.server.rest.jbpmstats;
 
-import static org.kie.server.remote.rest.common.util.RestUtils.buildConversationIdHeader;
-import static org.kie.server.remote.rest.common.util.RestUtils.createResponse;
+import static org.kie.server.remote.rest.common.util.RestUtils.getContentType;
 import static org.kie.server.remote.rest.common.util.RestUtils.getVariant;
 
 import javax.ws.rs.GET;
@@ -28,12 +27,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
-import org.kie.server.remote.rest.common.Header;
+import org.kie.server.api.marshalling.Marshaller;
+import org.kie.server.api.marshalling.MarshallingFormat;
+import org.kie.server.services.api.KieContainerInstance;
 import org.kie.server.services.api.KieServerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.surreal.kie.server.services.jbpmstats.StatsServiceBase;
+import static org.kie.server.remote.rest.common.util.RestUtils.createResponse;
 
 @Path("/server/containers/{containerId}/processes")
 public class StatsResource
@@ -49,11 +51,17 @@ public class StatsResource
 
 	@GET
 	@Path("/{processId}/statsTest")
-	@Produces({MediaType.TEXT_PLAIN})
+	@Produces({MediaType.APPLICATION_XML})
 	public Response test(@Context HttpHeaders headers, @PathParam("containerId") String containerId, @PathParam("processId") String processId) {
 		Variant v = getVariant(headers);
-		Header conversationIdHeader = buildConversationIdHeader(containerId, registry, headers);
-		int number = statsServiceBase.doTheTest(processId);
-		return createResponse("Result "+number, v, Response.Status.OK, conversationIdHeader);
+		String contentType = getContentType(headers);
+		MarshallingFormat format = MarshallingFormat.fromType(contentType);
+		if (format == null) {
+            format = MarshallingFormat.valueOf(contentType);
+        }		
+		KieContainerInstance kci = registry.getContainer(containerId);
+		Marshaller marshaller = kci.getMarshaller(format);
+		String result = marshaller.marshall(statsServiceBase.getProcessStats(processId));
+		return createResponse(result, v, Response.Status.OK);
 	}
 }

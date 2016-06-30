@@ -12,6 +12,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>pl.surreal.kie.server.api</groupId>
+      <artifactId>kie-server-api-jbpm-stats</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>  
+    <dependency>
       <groupId>pl.surreal.kie.server.services</groupId>
       <artifactId>kie-server-services-jbpm-stats</artifactId>
       <version>1.0.0-SNAPSHOT</version>

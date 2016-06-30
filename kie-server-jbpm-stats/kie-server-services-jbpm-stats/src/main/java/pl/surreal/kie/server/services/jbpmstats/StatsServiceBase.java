@@ -21,6 +21,9 @@ import org.jbpm.process.audit.ProcessInstanceLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.surreal.kie.server.api.jbpmstats.ProcessStatistics;
+import pl.surreal.kie.server.api.jbpmstats.ServiceResponse;
+
 public class StatsServiceBase
 {
 	private static final Logger logger = LoggerFactory.getLogger(StatsServiceBase.class);
@@ -30,13 +33,12 @@ public class StatsServiceBase
 		this.auditLogService = auditLogService;
 	}
 	
-	public int doTheTest(String processId) {
+	public ServiceResponse<ProcessStatistics> getProcessStats(String processId) {
 		List<ProcessInstanceLog> list = auditLogService.findProcessInstances(processId);
 		int size = list.size();
 		logger.debug("Found '{}' process instance logs",size);
-		for(ProcessInstanceLog pil : list) {
-			logger.debug("PIL '{}'",pil.toString());
-		}
-		return size;
+		ProcessStatistics stats = new ProcessStatistics();
+		stats.setTotalInstances(size);
+		return new ServiceResponse<ProcessStatistics>(ServiceResponse.ResponseType.SUCCESS,"Process statistics",stats);
 	}
 }

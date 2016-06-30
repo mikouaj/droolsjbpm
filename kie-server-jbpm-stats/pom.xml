@@ -84,5 +84,6 @@
   <modules>
   	<module>kie-server-services-jbpm-stats</module>
   	<module>kie-server-rest-jbpm-stats</module>
+  	<module>kie-server-api-jbpm-stats</module>
   </modules>
 </project>
