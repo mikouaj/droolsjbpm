@@ -66,10 +66,42 @@ ation class org.kie.server.remote.rest.common.KieServerApplication
 2016-06-28 12:24:01,346 INFO  [org.jboss.as.server] (ServerService Thread Pool -- 31) JBAS018559: Deployed "kie-server.war" (runtime-name : "kie-server.war")
 ```
 ###Usage
-Once you have extended kie-server.war, deploy some container with processes i.e. hr container for "human resources" from [JBPM playground](https://github.com/droolsjbpm/jbpm-playground).
+Once you have extended kie-server.war, create some container from aftifact that contains bpmn process like org.jbpm.HR from [JBPM playground](https://github.com/droolsjbpm/jbpm-playground).
 
-Run HTTP GET on below endpoint:
+REST module exposes following endpoint over HTTP:
+* [GET] http://serverhost:port/kie-server/services/rest/server/containers/*hr*/processes/*hiring*/diagram
 
-`http://serverhost:port/kie-server/services/rest/server/containers/*hr*/processes/*hiring*/diagram`
+_NOTE notice variables in the url, **hr** is container's ID and **hiring** is process' ID_
 
-You should receive full BPMN2 XML file in response body :-)
+####Extended search
+
+Extension is deriving bpmn2 file's name from processId. In most cases it will work fine however it may happen that process file name will be unusual - in that case most accurate way to match ProcessDefinition with bpmn2 file is to check the ID inside the file. Extension is providing *extended search* feature that, if enabled, looks into bpmn2 files to find matching ID. This happens only if regular machanism didnt work.
+
+By default *extended search* is disabled. If bpmn2 file wont be located based on processID then there will be no result. To enable this feature set `pl.surreal.jbpmdiagram.server.extendedsearch.enabled` system property to `TRUE`.
+
+Example for Wildfly/Jboss EAP standalone mode:
+* Open your standalone configuration file i.e. `/opt/wildfly/standalone/configuration/standalone-full.xml`
+* Locate system property config section (`/server/system-properties`)
+* Add new property
+```
+    <system-properties>
+        <property name="pl.surreal.jbpmdiagram.server.extendedsearch.enabled" value="true"/>
+    </system-properties>
+```
+* Reload your app server
+* As an altenrative you can this option as argument on server's startup
+
+###Troubleshooting
+
+I expect that most problems with extension maybe be caused by not properly located bpmn2 file. Check *extended search* feature if you didnt enable it yet. If still in trobule, enable DEBUG level for "pl.surreal" category in your AS and observe server log.
+
+Example for Wildfly/Jboss EAP standalone mode:
+* Open your standalone configuration file i.e. `/opt/wildfly/standalone/configuration/standalone-full.xml`
+* Locate logging subsystem config section (`/server/profile/subsystem[xmlns="urn:jboss:domain:logging:3.0"]`)
+* Add new logger category
+```
+    <logger category="pl.surreal">
+      <level name="DEBUG"/>
+    </logger>
+```
+* Reload your app server
