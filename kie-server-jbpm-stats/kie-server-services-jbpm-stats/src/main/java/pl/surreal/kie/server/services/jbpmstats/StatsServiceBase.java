@@ -18,15 +18,17 @@ import java.util.List;
 
 import org.jbpm.process.audit.JPAAuditLogService;
 import org.jbpm.process.audit.ProcessInstanceLog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import pl.surreal.kie.server.api.jbpmstats.ProcessStatistics;
 import pl.surreal.kie.server.api.jbpmstats.ServiceResponse;
+import pl.surreal.kie.server.services.jbpmstats.impl.BasicProcessStats;
+import pl.surreal.kie.server.services.jbpmstats.impl.IProcessStats;
+import pl.surreal.kie.server.services.jbpmstats.impl.NodeProcessStats;
+import pl.surreal.kie.server.services.jbpmstats.impl.StatusProcessStats;
 
 public class StatsServiceBase
 {
-	private static final Logger logger = LoggerFactory.getLogger(StatsServiceBase.class);
+	//private static final Logger logger = LoggerFactory.getLogger(StatsServiceBase.class);
 	private JPAAuditLogService auditLogService;
 	
 	public StatsServiceBase(JPAAuditLogService auditLogService) {
@@ -34,11 +36,13 @@ public class StatsServiceBase
 	}
 	
 	public ServiceResponse<ProcessStatistics> getProcessStats(String processId) {
-		List<ProcessInstanceLog> list = auditLogService.findProcessInstances(processId);
-		int size = list.size();
-		logger.debug("Found '{}' process instance logs",size);
-		ProcessStatistics stats = new ProcessStatistics();
-		stats.setTotalInstances(size);
-		return new ServiceResponse<ProcessStatistics>(ServiceResponse.ResponseType.SUCCESS,"Process statistics",stats);
+		List<ProcessInstanceLog> instanceLogList = auditLogService.findProcessInstances(processId);
+		IProcessStats statistics = new NodeProcessStats(new StatusProcessStats(new BasicProcessStats()));
+		for(ProcessInstanceLog instanceLog : instanceLogList) {
+			statistics.updateStatistics(instanceLog,auditLogService.findNodeInstances(instanceLog.getId()));
+		}
+		
+		ProcessStatistics processStats = statistics.getStatistics();
+		return new ServiceResponse<ProcessStatistics>(ServiceResponse.ResponseType.SUCCESS,"Process statistics",processStats);
 	}
 }

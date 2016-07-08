@@ -24,6 +24,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class ProcessStatistics
 {
 	private int totalInstances;
+	private long completedDuration;
+	private ProcessStatusStats statusStats;
+	private ProcessNodeStats nodeStats;
+	
 	public ProcessStatistics() {
 		super();
 	}
@@ -35,5 +39,32 @@ public class ProcessStatistics
 	
 	public void setTotalInstances(int totalInstances) {
 		this.totalInstances = totalInstances;
+	}
+
+	@XmlElement(name="status-statistics")
+	public ProcessStatusStats getStatusStats() {
+		return statusStats;
+	}
+
+	public void setStatusStats(ProcessStatusStats statusStats) {
+		this.statusStats = statusStats;
+	}
+
+	@XmlElement(name="avg-completion-time")
+	public long getCompletedDuration() {
+		return completedDuration;
+	}
+
+	public void setCompletedDuration(long completedDuration) {
+		this.completedDuration = completedDuration;
+	}
+
+	@XmlElement(name="node-statistics")
+	public ProcessNodeStats getNodeStats() {
+		return nodeStats;
+	}
+	
+	public void setNodeStats(ProcessNodeStats nodeStats) {
+		this.nodeStats = nodeStats;
 	}
 }
